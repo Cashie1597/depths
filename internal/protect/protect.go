@@ -8,44 +8,13 @@ import (
 	"github.com/cashie/depths/internal/sample"
 )
 
-// Hard denylist — profiles cannot weaken these matches.
-var hardNameDeny = []string{
-	"kernel_task",
-	"launchd",
-	"WindowServer",
-	"loginwindow",
-	"UserEventAgent",
-	"SystemUIServer",
-	"Dock",
-	"Finder",
-	"cfprefsd",
-	"opendirectoryd",
-	"securityd",
-	"trustd",
-	"amfid",
-	"syspolicyd",
-	"coreservicesd",
-	"configd",
-	"powerd",
-	"logd",
-	"notifyd",
-	"distnoted",
-	"sharedfilelistd",
-	"tccd",
-	"sandboxd",
-	"secd",
-	"TrustEvaluationAgent",
-	"backupd",
-	"backupd-helper",
-	"Time Machine",
-	"mds",
-	"mds_stores",
-	"mdworker",
-	"mdworker_shared",
-	"Spotlight",
-	"ssh-agent",
-	"sudo",
+// Shared hard denies — self-preservation and remote/admin tools.
+// OS-specific lists live in protect_darwin.go / protect_linux.go.
+var sharedNameDeny = []string{
 	"depths",
+	"sudo",
+	"ssh-agent",
+	"sshd",
 }
 
 type Decision struct {
@@ -91,19 +60,24 @@ func (g *Guard) Check(p sample.Proc) Decision {
 		return Decision{Protected: true, Reason: "system pid"}
 	}
 	base := filepath.Base(p.Name)
-	lower := strings.ToLower(base)
-	for _, deny := range hardNameDeny {
-		if strings.EqualFold(base, deny) || strings.Contains(lower, strings.ToLower(deny)) {
+	for _, deny := range sharedNameDeny {
+		if strings.EqualFold(base, deny) {
 			return Decision{Protected: true, Reason: "hard denylist: " + deny}
 		}
 	}
-	// System paths under /System and /usr/libexec are protected by default.
+	for _, deny := range osNameDeny {
+		if strings.EqualFold(base, deny) {
+			return Decision{Protected: true, Reason: "hard denylist: " + deny}
+		}
+	}
 	cmd := p.Cmdline
 	if cmd == "" {
 		cmd = p.Name
 	}
-	if strings.HasPrefix(cmd, "/System/") || strings.HasPrefix(cmd, "/usr/libexec/") || strings.HasPrefix(cmd, "/sbin/") {
-		return Decision{Protected: true, Reason: "system path"}
+	for _, prefix := range osProtectedPrefixes {
+		if strings.HasPrefix(cmd, prefix) {
+			return Decision{Protected: true, Reason: "system path"}
+		}
 	}
 	return Decision{}
 }

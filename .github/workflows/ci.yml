@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Test
+        run: go test ./...
+      - name: Build
+        run: go build -o depths ./cmd/depths
+
+  # First-class Fedora smoke (Cashie execution host family).
+  fedora-smoke:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Go
+        run: |
+          dnf install -y golang git
+          go version
+      - name: Test
+        run: go test ./...
+      - name: Build
+        run: go build -o depths ./cmd/depths
+      - name: Scout plain once
+        run: ./depths scout --plain --once || ./depths scout --plain

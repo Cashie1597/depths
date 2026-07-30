@@ -22,17 +22,7 @@ type Receipt struct {
 	WrittenAt time.Time      `json:"written_at"`
 }
 
-func Dir() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	dir := filepath.Join(home, "Library", "Logs", "depths")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return "", err
-	}
-	return dir, nil
-}
+// Dir is implemented per-OS (Library/Logs on Darwin, XDG state on Linux).
 
 func Write(r Receipt) (string, error) {
 	dir, err := Dir()

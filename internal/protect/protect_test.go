@@ -7,12 +7,12 @@ import (
 	"github.com/cashie/depths/internal/sample"
 )
 
-func TestHardDenylist(t *testing.T) {
+func TestSharedDenylistAndSelf(t *testing.T) {
 	procs := []sample.Proc{
-		{PID: 1, Name: "launchd", PPID: 0},
-		{PID: 100, Name: "WindowServer", PPID: 1},
-		{PID: 200, Name: "Google Chrome", PPID: 1, Cmdline: "/Applications/Google Chrome.app/..."},
-		{PID: 300, Name: "kernel_task", PPID: 0},
+		{PID: 1, Name: "init", PPID: 0},
+		{PID: 200, Name: "Google Chrome", PPID: 1, Cmdline: "/opt/google/chrome/chrome"},
+		{PID: 400, Name: "sudo", PPID: 1},
+		{PID: 401, Name: "sshd", PPID: 1},
 	}
 	g := protect.NewGuard(procs)
 
@@ -21,9 +21,9 @@ func TestHardDenylist(t *testing.T) {
 		protect bool
 	}{
 		{1, true},
-		{100, true},
 		{200, false},
-		{300, true},
+		{400, true},
+		{401, true},
 	}
 	for _, tc := range cases {
 		var p sample.Proc
@@ -37,16 +37,5 @@ func TestHardDenylist(t *testing.T) {
 		if d.Protected != tc.protect {
 			t.Fatalf("pid %d name %s: protected=%v want %v (%s)", tc.pid, p.Name, d.Protected, tc.protect, d.Reason)
 		}
-	}
-}
-
-func TestSystemPathProtected(t *testing.T) {
-	procs := []sample.Proc{
-		{PID: 50, Name: "foo", PPID: 1, Cmdline: "/usr/libexec/foo"},
-	}
-	g := protect.NewGuard(procs)
-	d := g.Check(procs[0])
-	if !d.Protected {
-		t.Fatal("expected system path protection")
 	}
 }
