@@ -72,7 +72,7 @@ func renderASCII(color bool, width int) string {
 			if i >= 3 {
 				c = NeonFree
 			}
-			styled = lipgloss.NewStyle().Bold(true).Foreground(c).Background(Abyss).Render(line)
+			styled = paint(c, line, true)
 		}
 		lines = append(lines, center(styled, width))
 	}
@@ -135,30 +135,31 @@ func MenuView(color bool, width, height, cursor int, items []MenuItem, st HomeSt
 	fmt.Fprintf(&top, "%s\n\n", statusPanel(color, boxW, st))
 
 	for i, it := range items {
+		marker := " "
+		if i == cursor {
+			marker = "›"
+		}
 		if color {
-			var row string
+			// Every cell gets Abyss — bare spaces next to styled text flash grey.
+			var mark, gap, n, title, desc string
 			if i == cursor {
-				mark := lipgloss.NewStyle().Bold(true).Foreground(NeonFree).Background(Abyss).Render("›")
-				n := lipgloss.NewStyle().Bold(true).Foreground(NeonSwap).Background(Abyss).Render(fmt.Sprintf("%d.", i+1))
-				title := lipgloss.NewStyle().Bold(true).Foreground(Foam).Background(Abyss).Render(fmt.Sprintf(" %-10s", it.Title))
-				desc := lipgloss.NewStyle().Foreground(Mute).Background(Abyss).Render("  "+it.Desc)
-				row = mark + " " + n + title + desc
+				mark = paint(NeonFree, marker, true)
+				n = paint(NeonSwap, fmt.Sprintf("%d.", i+1), true)
+				title = paint(Foam, fmt.Sprintf(" %-10s", it.Title), true)
+				desc = paint(Mute, "  "+it.Desc, false)
 			} else {
-				mark := lipgloss.NewStyle().Foreground(Silt).Background(Abyss).Render(" ")
-				n := lipgloss.NewStyle().Foreground(Mute).Background(Abyss).Render(fmt.Sprintf("%d.", i+1))
-				title := lipgloss.NewStyle().Foreground(Foam).Background(Abyss).Render(fmt.Sprintf(" %-10s", it.Title))
-				desc := lipgloss.NewStyle().Foreground(Mute).Background(Abyss).Render("  "+it.Desc)
-				row = mark + " " + n + title + desc
+				mark = abyssPad(1)
+				n = paint(Mute, fmt.Sprintf("%d.", i+1), false)
+				title = paint(Foam, fmt.Sprintf(" %-10s", it.Title), false)
+				desc = paint(Mute, "  "+it.Desc, false)
 			}
-			fmt.Fprintf(&top, "  %s\n", row)
+			gap = abyssPad(1)
+			indent := abyssPad(2)
+			fmt.Fprintf(&top, "%s%s%s%s%s%s\n", indent, mark, gap, n, title, desc)
 			if i < len(items)-1 {
 				fmt.Fprintf(&top, "\n")
 			}
 		} else {
-			marker := " "
-			if i == cursor {
-				marker = "›"
-			}
 			fmt.Fprintf(&top, "  %s %d. %-10s  %s\n", marker, i+1, it.Title, it.Desc)
 			if i < len(items)-1 {
 				fmt.Fprintf(&top, "\n")
@@ -170,7 +171,7 @@ func MenuView(color bool, width, height, cursor int, items []MenuItem, st HomeSt
 	fmt.Fprintf(&foot, "%s\n", tone(color, Mute, "↑ ↓ Enter    ? Help    Q Quit"))
 	prompt := "depths ›"
 	if color {
-		prompt = lipgloss.NewStyle().Bold(true).Foreground(NeonSwap).Background(Abyss).Render("depths ›")
+		prompt = paint(NeonSwap, "depths ›", true)
 	}
 	fmt.Fprintf(&foot, "%s%s", prompt, tone(color, Mute, "  state before action"))
 
@@ -293,36 +294,40 @@ func statusPanel(color bool, width int, st HomeStatus) string {
 	top := "┌" + strings.Repeat("─", inner) + "┐"
 	bot := "└" + strings.Repeat("─", inner) + "┘"
 	mid := "├" + strings.Repeat("─", inner) + "┤"
-	fmt.Fprintf(&b, "%s\n", boxLine(true, top))
+	fmt.Fprintf(&b, "%s\n", statusBorder(top))
 	fmt.Fprintf(&b, "%s\n", statusBoxTitle(inner))
-	fmt.Fprintf(&b, "%s\n", boxLine(true, mid))
-	fmt.Fprintf(&b, "%s\n", boxLine(true, "│"+strings.Repeat(" ", inner)+"│"))
+	fmt.Fprintf(&b, "%s\n", statusBorder(mid))
+	fmt.Fprintf(&b, "%s\n", statusBorder("│"+strings.Repeat(" ", inner)+"│"))
 	for _, r := range rows {
 		fmt.Fprintf(&b, "%s\n", statusBoxRow(inner, r.label, r.value, r.c))
 	}
-	fmt.Fprintf(&b, "%s\n", boxLine(true, "│"+strings.Repeat(" ", inner)+"│"))
-	fmt.Fprintf(&b, "%s", boxLine(true, bot))
+	fmt.Fprintf(&b, "%s\n", statusBorder("│"+strings.Repeat(" ", inner)+"│"))
+	fmt.Fprintf(&b, "%s", statusBorder(bot))
 	return b.String()
 }
 
+func statusBorder(s string) string {
+	return paint(Silt, s, false)
+}
+
 func statusBoxTitle(inner int) string {
-	title := lipgloss.NewStyle().Bold(true).Foreground(Foam).Background(Abyss).Render(" STATUS")
+	title := paint(Foam, " STATUS", true)
 	plain := " STATUS"
 	pad := max(0, inner-utf8.RuneCountInString(plain))
-	left := lipgloss.NewStyle().Foreground(Silt).Background(Abyss).Render("│")
-	right := lipgloss.NewStyle().Foreground(Silt).Background(Abyss).Render("│")
-	return left + title + strings.Repeat(" ", pad) + right
+	left := paint(Silt, "│", false)
+	right := paint(Silt, "│", false)
+	return left + title + abyssPad(pad) + right
 }
 
 func statusBoxRow(inner int, label, value string, c lipgloss.Color) string {
 	labPlain := fmt.Sprintf(" %-18s", label)
-	lab := lipgloss.NewStyle().Foreground(Mute).Background(Abyss).Render(labPlain)
-	val := lipgloss.NewStyle().Bold(true).Foreground(c).Background(Abyss).Render(value)
+	lab := paint(Mute, labPlain, false)
+	val := paint(c, value, true)
 	used := utf8.RuneCountInString(labPlain) + utf8.RuneCountInString(value)
 	pad := max(1, inner-used)
-	left := lipgloss.NewStyle().Foreground(Silt).Background(Abyss).Render("│")
-	right := lipgloss.NewStyle().Foreground(Silt).Background(Abyss).Render("│")
-	return left + lab + val + strings.Repeat(" ", pad) + right
+	left := paint(Silt, "│", false)
+	right := paint(Silt, "│", false)
+	return left + lab + val + abyssPad(pad) + right
 }
 
 func pressureColor(p string) lipgloss.Color {

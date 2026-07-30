@@ -537,7 +537,23 @@ func center(s string, width int) string {
 		return s
 	}
 	pad := (width - n) / 2
-	return strings.Repeat(" ", pad) + s
+	// Pad must carry Abyss too — bare spaces flash terminal grey beside styled text.
+	return abyssPad(pad) + s
+}
+
+func abyssPad(n int) string {
+	if n <= 0 {
+		return ""
+	}
+	return lipgloss.NewStyle().Background(Abyss).Render(strings.Repeat(" ", n))
+}
+
+func paint(c lipgloss.Color, s string, bold bool) string {
+	st := lipgloss.NewStyle().Foreground(c).Background(Abyss)
+	if bold {
+		st = st.Bold(true)
+	}
+	return st.Render(s)
 }
 
 func stripANSI(s string) string {
