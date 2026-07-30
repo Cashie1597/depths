@@ -1,0 +1,12 @@
+# Binaries
+/depths
+/depths-*
+*.exe
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Go
+/vendor/

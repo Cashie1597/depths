@@ -1,0 +1,15 @@
+name: operator
+description: Lower gate; broader userland — hard denylist still applies
+min_pressure: normal
+min_swap_used_bytes: 67108864
+allow_kinds:
+  - browser
+  - chat
+  - media
+  - electron
+  - dev
+  - agent
+  - other
+grace_seconds: 5
+allow_force_kill: true
+max_groups: 12

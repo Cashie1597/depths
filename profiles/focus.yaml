@@ -1,0 +1,11 @@
+name: focus
+description: Medium gate; browsers + chat + media
+min_pressure: warn
+min_swap_used_bytes: 268435456
+allow_kinds:
+  - browser
+  - chat
+  - media
+grace_seconds: 10
+allow_force_kill: false
+max_groups: 5

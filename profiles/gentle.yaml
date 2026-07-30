@@ -1,0 +1,9 @@
+name: gentle
+description: High gate; browsers/helpers only; long grace
+min_pressure: warn
+min_swap_used_bytes: 536870912
+allow_kinds:
+  - browser
+grace_seconds: 15
+allow_force_kill: false
+max_groups: 3
