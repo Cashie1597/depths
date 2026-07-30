@@ -1,10 +1,9 @@
 # DEPTHS — Ghostty theme (AES-001)
 # Abyss terminal surface for the Cashie Relay / DEPTHS CLI lane.
-# Spec: ~/PROJECTS/00-active/depths/docs/DEPTHS-aesthetic-spec.md
 # Tokens: abyss · trench · silt · foam · depth · pressure · breach · mute
-# No purple. No neon. Atmosphere = vertical density + pressure, not sparkle.
+# No purple. No glow stacks. Atmosphere = vertical density + pressure.
 #
-# Apply: theme = depths  (already set in ~/.config/ghostty/config)
+# Apply: copy to ~/.config/ghostty/themes/depths  then  theme = depths
 # Reload: Super+Shift+,  or restart Ghostty
 
 background = #0A0C0B
