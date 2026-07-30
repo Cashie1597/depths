@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DEPTHS — quiet observation layer</title>
+    <meta
+      name="description"
+      content="macOS observation console for memory pressure — scout first, dry-run before claim."
+    />
+    <meta property="og:title" content="DEPTHS" />
+    <meta
+      property="og:description"
+      content="Quiet observation layer. Reclaim under pressure — dry-run first."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://cashie1597.github.io/depths/" />
+    <style>
+      :root {
+        --abyss: #0a0c0b;
+        --trench: #121614;
+        --silt: #2a332e;
+        --foam: #c8d2ca;
+        --mute: #6b756f;
+        --cyan: #00f0ff;
+        --lime: #39ff14;
+        --warn: #ff9f1c;
+        --risk: #ff2d6a;
+      }
+      * { box-sizing: border-box; }
+      html { color-scheme: dark; scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(ellipse 70% 45% at 80% 0%, rgba(0, 240, 255, 0.07), transparent 55%),
+          radial-gradient(ellipse 50% 40% at 10% 20%, rgba(57, 255, 20, 0.04), transparent 50%),
+          var(--abyss);
+        color: var(--foam);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1080px, calc(100% - 2.5rem)); margin-inline: auto; }
+      .top {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 1.25rem 0; color: var(--mute); font-size: 0.75rem; letter-spacing: 0.08em;
+      }
+      .top a:hover { color: var(--cyan); }
+      .hero {
+        display: grid; gap: 2.5rem; align-items: center; padding: 2rem 0 3.5rem;
+      }
+      @media (min-width: 960px) {
+        .hero { grid-template-columns: 1.05fr 0.95fr; gap: 3rem; }
+      }
+      .kicker {
+        margin: 0 0 1rem; font-size: 0.7rem; letter-spacing: 0.14em;
+        text-transform: uppercase; color: var(--mute);
+      }
+      .brand {
+        margin: 0; font-size: clamp(3rem, 9vw, 5.2rem); font-weight: 700;
+        letter-spacing: 0.06em; line-height: 0.95; color: var(--cyan);
+        text-shadow: 0 0 40px rgba(0, 240, 255, 0.18);
+      }
+      .tagline { margin: 0.85rem 0 0; font-size: 1.05rem; color: var(--mute); }
+      .lede {
+        margin: 1.35rem 0 0; max-width: 38ch; font-size: 1.05rem;
+        color: var(--foam); opacity: 0.88;
+      }
+      .cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: 0.7rem 1.15rem; border-radius: 999px; font-size: 0.85rem;
+        border: 1px solid var(--silt); color: var(--mute); transition: 0.15s ease;
+      }
+      .btn:hover { border-color: rgba(200, 210, 202, 0.35); color: var(--foam); }
+      .btn-primary {
+        background: rgba(0, 240, 255, 0.12);
+        border-color: rgba(0, 240, 255, 0.45); color: var(--cyan);
+      }
+      .btn-primary:hover { background: rgba(0, 240, 255, 0.2); }
+      .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+      .chips li {
+        padding: 0.35rem 0.7rem; border: 1px solid var(--silt); border-radius: 999px;
+        font-size: 0.72rem; color: var(--mute); background: rgba(18, 22, 20, 0.55);
+      }
+      .preview {
+        overflow: hidden; border-radius: 12px; border: 1px solid rgba(42, 51, 46, 0.9);
+        background: var(--abyss); box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+      }
+      .preview-bar {
+        display: flex; align-items: center; gap: 0.5rem;
+        border-bottom: 1px solid rgba(42, 51, 46, 0.85); background: var(--trench);
+        padding: 0.55rem 0.75rem;
+      }
+      .dot { width: 10px; height: 10px; border-radius: 50%; }
+      .chrome {
+        margin-left: 0.25rem; padding: 0.15rem 0.5rem; border-radius: 6px;
+        background: rgba(0,0,0,0.35); font-size: 10px; color: var(--mute);
+      }
+      .preview-body { padding: 1.25rem 1.35rem; font-size: 12px; line-height: 1.6; }
+      .preview-title { text-align: center; font-weight: 700; letter-spacing: 0.2em; color: var(--cyan); }
+      .preview-sub { text-align: center; margin-top: 0.35rem; color: var(--mute); }
+      .status {
+        margin-top: 1rem; border: 1px solid var(--silt); border-radius: 8px;
+        background: rgba(18, 22, 20, 0.4); padding: 0.75rem 0.85rem;
+      }
+      .status h2 {
+        margin: 0 0 0.55rem; font-size: 10px; letter-spacing: 0.12em; color: var(--foam);
+      }
+      .row { display: flex; justify-content: space-between; gap: 1rem; color: var(--mute); }
+      .row + .row { margin-top: 0.25rem; }
+      .menu { margin-top: 1rem; color: var(--mute); }
+      .menu p { margin: 0.35rem 0; }
+      .prompt { margin-top: 1rem; color: var(--mute); }
+      .section { padding: 2.5rem 0; }
+      .label {
+        margin: 0 0 0.65rem; font-size: 0.68rem; letter-spacing: 0.16em;
+        text-transform: uppercase; color: var(--cyan);
+      }
+      .h2 {
+        margin: 0; max-width: 24ch; font-size: clamp(1.35rem, 3vw, 1.85rem);
+        font-weight: 600; letter-spacing: -0.02em; line-height: 1.25;
+      }
+      .principles { display: grid; gap: 1rem; margin-top: 1.75rem; }
+      @media (min-width: 768px) { .principles { grid-template-columns: repeat(3, 1fr); } }
+      .principle { padding: 1.15rem 0; border-top: 1px solid var(--silt); }
+      .principle h3 { margin: 0; font-size: 0.95rem; color: var(--lime); }
+      .principle p { margin: 0.55rem 0 0; font-size: 0.9rem; color: var(--mute); }
+      pre {
+        margin: 1.5rem 0 0; padding: 1.15rem 1.25rem; overflow-x: auto;
+        border: 1px solid var(--silt); border-radius: 12px; background: #070908;
+        color: var(--foam); font-size: 0.82rem; line-height: 1.55;
+      }
+      .cmds { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.65rem; }
+      .cmds li { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; color: var(--mute); font-size: 0.9rem; }
+      .cmds code { color: var(--cyan); font-size: 0.82rem; }
+      .safety { margin: 1.5rem 0 0; max-width: 48ch; color: var(--mute); font-size: 0.9rem; }
+      .warn { color: var(--warn); }
+      .foot {
+        display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
+        padding: 1.5rem 0 2.5rem; border-top: 1px solid var(--silt); color: var(--mute); font-size: 0.85rem;
+      }
+      .foot a:hover { color: var(--cyan); }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <span>Cashie Relay · v0.1.0 · MIT</span>
+        <a href="https://github.com/Cashie1597/depths">GitHub →</a>
+      </header>
+
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="kicker">macOS · observation console</p>
+          <h1 id="title" class="brand">DEPTHS</h1>
+          <p class="tagline">quiet observation layer</p>
+          <p class="lede">
+            Terminal memory reclamation under swap pressure. Scout first. Dry-run before claim.
+            Evidence, confidence, then the safe next step.
+          </p>
+          <div class="cta">
+            <a class="btn btn-primary" href="#run">Run locally</a>
+            <a class="btn" href="https://github.com/Cashie1597/depths">View source</a>
+          </div>
+          <ul class="chips">
+            <li>Observation console</li>
+            <li>Dry-run default</li>
+            <li>MIT</li>
+            <li>Go + Bubble Tea</li>
+          </ul>
+        </div>
+
+        <aside class="preview" aria-label="Console preview">
+          <div class="preview-bar">
+            <span class="dot" style="background:#ff5f57"></span>
+            <span class="dot" style="background:#febc2e"></span>
+            <span class="dot" style="background:#28c840"></span>
+            <span class="chrome">depths › observation console</span>
+          </div>
+          <div class="preview-body">
+            <div class="preview-title">DEPTHS</div>
+            <div class="preview-sub">quiet observation layer</div>
+            <div class="status">
+              <h2>STATUS</h2>
+              <div class="row"><span>Memory pressure</span><strong style="color:var(--lime)">NORMAL</strong></div>
+              <div class="row"><span>Swap</span><strong style="color:var(--warn)">ACTIVE</strong></div>
+              <div class="row"><span>Gate</span><strong style="color:var(--risk)">HELD</strong></div>
+              <div class="row"><span>Last scout</span><strong style="color:var(--cyan)">0s ago</strong></div>
+            </div>
+            <div class="menu">
+              <p><span style="color:var(--lime)">›</span> <span style="color:var(--cyan)">1.</span> Scout · watch memory pressure</p>
+              <p style="padding-left:1rem">2. Dry-run · no signals</p>
+              <p style="padding-left:1rem">3. Safety · invariants first</p>
+            </div>
+            <p class="prompt"><strong style="color:var(--cyan)">depths ›</strong> state before action</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-labelledby="voice">
+        <p class="label">Voice</p>
+        <h2 id="voice" class="h2">I observed something. Here is the evidence.</h2>
+        <div class="principles">
+          <article class="principle">
+            <h3>Observe before action</h3>
+            <p>Home answers what is happening — pressure, swap, gate — before any menu choice.</p>
+          </article>
+          <article class="principle">
+            <h3>Dry-run first</h3>
+            <p>Plans print targets and estimates. No signals until you confirm a live claim.</p>
+          </article>
+          <article class="principle">
+            <h3>Explicit risk</h3>
+            <p>SIGTERM → grace → SIGKILL. Denylist is hard. Receipts for every live claim.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="run" class="section" aria-labelledby="run-title">
+        <p class="label">Run</p>
+        <h2 id="run-title" class="h2">Build once. Observe under pressure.</h2>
+        <pre><code>git clone https://github.com/Cashie1597/depths.git
+cd depths
+go build -o depths ./cmd/depths
+./depths</code></pre>
+        <ul class="cmds">
+          <li><code>./depths</code><span>Operator console · status before actions</span></li>
+          <li><code>./depths scout</code><span>Live memory watch</span></li>
+          <li><code>./depths claim --dry-run</code><span>Preview reclaim plan · no signals</span></li>
+        </ul>
+        <p class="safety">
+          Read <span class="warn">SAFETY.md</span> before any live claim. Default is observe-only.
+        </p>
+      </section>
+
+      <footer class="foot">
+        <p>Part of <a href="https://cashie.dev">Cashie.dev</a> · Cashie Relay family</p>
+        <p><a href="https://github.com/Cashie1597/depths">github.com/Cashie1597/depths</a></p>
+      </footer>
+    </div>
+  </body>
+</html>

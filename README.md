@@ -2,10 +2,14 @@
 
 Standalone macOS terminal tool for reclaiming RAM under swap pressure.
 
+**Landing:** https://cashie1597.github.io/depths/  
+**Repo:** https://github.com/Cashie1597/depths
+
 ```bash
-cd ~/PROJECTS/03-labs/depths
+git clone https://github.com/Cashie1597/depths.git
+cd depths
 go build -o depths ./cmd/depths
-./depths                 # starter console (ASCII + menu)
+./depths                 # starter console (status before actions)
 ./depths scout           # live watch
 ./depths claim --dry-run # plan only
 ```
