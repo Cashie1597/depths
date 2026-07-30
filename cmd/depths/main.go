@@ -19,7 +19,7 @@ import (
 	"github.com/cashie/depths/internal/tui"
 )
 
-var version = "0.1.0"
+var version = "0.2.0"
 
 type CLI struct {
 	Menu     MenuCmd     `cmd:"" default:"1" help:"Interactive observation console (default)."`

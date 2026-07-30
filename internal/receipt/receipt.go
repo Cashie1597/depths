@@ -31,7 +31,7 @@ func Write(r Receipt) (string, error) {
 	}
 	r.WrittenAt = time.Now()
 	if r.Version == "" {
-		r.Version = "0.1.0"
+		r.Version = "0.2.0"
 	}
 	name := fmt.Sprintf("claim-%s.json", r.WrittenAt.Format("20060102-150405"))
 	path := filepath.Join(dir, name)

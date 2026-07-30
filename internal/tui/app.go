@@ -252,7 +252,7 @@ func (m model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		case "?", "h":
 			m.screen = screenOverlay
-			m.overlay = surface.HelpText("0.1.0")
+			m.overlay = surface.HelpText("0.2.0")
 		case "enter", " ":
 			return m.activate()
 		}
@@ -265,7 +265,7 @@ func (m model) activate() (tea.Model, tea.Cmd) {
 	switch id {
 	case "help":
 		m.screen = screenOverlay
-		m.overlay = surface.HelpText("0.1.0")
+		m.overlay = surface.HelpText("0.2.0")
 		return m, nil
 	case "safety":
 		m.screen = screenOverlay
